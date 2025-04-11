@@ -1,5 +1,5 @@
-# Use Windows Server Core 2022 as the base image
-FROM mcr.microsoft.com/windows/servercore:ltsc2022
+# Use a specific Windows Server Core 2022 build to match GitHub Actions runner
+FROM mcr.microsoft.com/windows/servercore:10.0.20348.2227
 
 # Set shell to PowerShell
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
@@ -9,7 +9,7 @@ ENV OCTOPUS_VERSION=2024.3.11951 \
     OCTOPUS_HOME=C:\Octopus \
     OCTOPUS_ADMIN_USERNAME="admin" \
     OCTOPUS_ADMIN_PASSWORD="SecurePassword123!" \
-    OCTOPUS_SQL_CONNECTION_STRING="Server=octopus-db.crufshaeq0ox.us-east-1.rds.amazonaws.comm;Database=OctopusDeploy;User Id=octopusadmin;Password=SecureDBPass123!;" \
+    OCTOPUS_SQL_CONNECTION_STRING="Server=octopus-db.xxxxxxx.us-east-1.rds.amazonaws.com;Database=OctopusDeploy;User Id=octopusadmin;Password=SecureDBPass123!;" \
     OCTOPUS_PORT=8080
 
 # Create directories
