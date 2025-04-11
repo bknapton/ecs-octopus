@@ -1,7 +1,7 @@
 {
   "family": "octopus-deploy",
-  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsOctopusTaskRole",
+  "executionRoleArn": "arn:aws:iam::665040277244:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::665040277244:role/ecsOctopusTaskRole",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "1024",
@@ -9,7 +9,7 @@
   "containerDefinitions": [
     {
       "name": "octopus-deploy",
-      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:latest",
+      "image": "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest",
       "essential": true,
       "portMappings": [
         {
@@ -40,7 +40,7 @@
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/octopus-deploy",
-          "awslogs-region": "${AWS_REGION}",
+          "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "octopus"
         }
       },
@@ -49,8 +49,9 @@
         "interval": 30,
         "timeout": 5,
         "retries": 3,
-        "startPeriod": 60
-      }
+        "startPeriod": 120
+      },
+      "operatingSystemFamily": "WINDOWS_SERVER_2022_FULL"
     }
   ]
 }
