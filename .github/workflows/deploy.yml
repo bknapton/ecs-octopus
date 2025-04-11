@@ -14,7 +14,7 @@ env:
 
 jobs:
   deploy:
-    runs-on: windows-latest # Required for Windows container build
+    runs-on: windows-latest # Windows runner for Windows container build
 
     steps:
       # Checkout the repository code
@@ -24,6 +24,15 @@ jobs:
       # Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      # Log Windows version for debugging
+      - name: Log Windows version
+        run: |
+          systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+          Write-Output "Docker version:"
+          docker --version
+          Write-Output "Docker info:"
+          docker info --format '{{.OperatingSystem}} {{.KernelVersion}}'
 
       # Configure AWS credentials
       - name: Configure AWS credentials
@@ -50,7 +59,8 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker pull mcr.microsoft.com/windows/servercore:10.0.20348.2227
+          docker build --no-cache -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
       # Update task definition with secrets
@@ -83,6 +93,24 @@ jobs:
           $task_def_response = aws ecs register-task-definition --cli-input-json file://$env:TASK_DEF_PATH
           $revision = ($task_def_response | ConvertFrom-Json).taskDefinition.taskDefinitionArn
           echo "TASK_DEFINITION_ARN=$revision" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "Registered task definition: $revision"
+
+      # Create ECS cluster if it doesn't exist
+      - name: Create ECS cluster
+        run: |
+          aws ecs create-cluster --cluster-name $env:ECS_CLUSTER --region $env:AWS_REGION || true
+
+      # Create ECS service if it doesn't exist
+      - name: Create ECS service
+        run: |
+          aws ecs create-service `
+            --cluster $env:ECS_CLUSTER `
+            --service-name $env:ECS_SERVICE `
+            --task-definition $env:TASK_DEFINITION_ARN `
+            --desired-count 1 `
+            --launch-type FARGATE `
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-d3e3bedc,subnet-2a3da64d],securityGroups=[sg-07a17253433885dce],assignPublicIp=ENABLED}" `
+            --region $env:AWS_REGION || true
 
       # Update ECS service
       - name: Update ECS service
@@ -91,4 +119,18 @@ jobs:
             --cluster $env:ECS_CLUSTER `
             --service $env:ECS_SERVICE `
             --task-definition $env:TASK_DEFINITION_ARN `
-            --force-new-deployment
+            --force-new-deployment `
+            --region $env:AWS_REGION
+
+      # Wait for service stability and log status
+      - name: Wait for service stability
+        run: |
+          aws ecs wait services-stable `
+            --cluster $env:ECS_CLUSTER `
+            --services $env:ECS_SERVICE `
+            --region $env:AWS_REGION
+          aws ecs describe-services `
+            --cluster $env:ECS_CLUSTER `
+            --services $env:ECS_SERVICE `
+            --region $env:AWS_REGION `
+            --query 'services[0].{status:status,runningCount:runningCount,events:events[0:3]}'
