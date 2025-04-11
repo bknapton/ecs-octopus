@@ -1,0 +1,56 @@
+{
+  "family": "octopus-deploy",
+  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsOctopusTaskRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "3072",
+  "containerDefinitions": [
+    {
+      "name": "octopus-deploy",
+      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "OCTOPUS_SQL_CONNECTION_STRING",
+          "value": "Server=${RDS_ENDPOINT};Database=OctopusDeploy;User Id=${RDS_USERNAME};Password=${RDS_PASSWORD};"
+        },
+        {
+          "name": "OCTOPUS_ADMIN_USERNAME",
+          "value": "admin"
+        },
+        {
+          "name": "OCTOPUS_ADMIN_PASSWORD",
+          "value": "${OCTOPUS_ADMIN_PASSWORD}"
+        },
+        {
+          "name": "OCTOPUS_PORT",
+          "value": "8080"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/octopus-deploy",
+          "awslogs-region": "${AWS_REGION}",
+          "awslogs-stream-prefix": "octopus"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "powershell -command \"Invoke-WebRequest -Uri http://localhost:8080 -UseBasicParsing | Where-Object { $_.StatusCode -eq 200 }\""],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
