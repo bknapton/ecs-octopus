@@ -11,7 +11,7 @@
   "containerDefinitions": [
     {
       "name": "octopus-container",
-      "image": "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest",
+      "image": "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:062ab81e94981961a3dec29b2164db1ca90216f3",
       "essential": true,
       "portMappings": [
         {
