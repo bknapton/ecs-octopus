@@ -58,7 +58,7 @@ jobs:
           container-name: octopus-container
 
           # Use the newly pushed image
-          image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
+          image: 665040277244.dkr.ecr.$us-east-1.amazonaws.com/octopus-deploy:${{ github.sha }}
 
           # Override environment variables with your RDS/Octopus secrets
           environment-variables: >
