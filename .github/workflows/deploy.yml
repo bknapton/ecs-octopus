@@ -52,7 +52,7 @@ jobs:
 
       # 4) Deploy to ECS
       - name: Deploy to Amazon ECS
-        uses: aws-actions/amazon-ecs-deploy@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           cluster: octopus-cluster
           service: octopus-service
