@@ -33,7 +33,7 @@ jobs:
           IMAGE_TAG=${{ github.sha }}
 
           # Construct the ECR URI from your secrets
-          ECR_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}"
+          ECR_URI="665040277244.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}"
 
           # Build the image from your Dockerfile
           docker build -t octopus-deploy .
