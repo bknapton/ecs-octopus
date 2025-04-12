@@ -1,17 +1,17 @@
 {
   "family": "octopus-task",
-  "networkMode": "awsvpc",
   "requiresCompatibilities": [
     "FARGATE"
   ],
-  "executionRoleArn": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::123456789012:role/ecsTaskRole",
+  "networkMode": "awsvpc",
+  "executionRoleArn": "arn:aws:iam::665040277244:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::665040277244:role/ecsOctopusTaskRole",
   "cpu": "512",
   "memory": "1024",
   "containerDefinitions": [
     {
       "name": "octopus-container",
-      "image": "REPLACE_ME", 
+      "image": "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest",
       "essential": true,
       "portMappings": [
         {
