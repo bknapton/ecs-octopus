@@ -1,15 +1,17 @@
 {
-  "family": "octopus-deploy",
-  "executionRoleArn": "arn:aws:iam::665040277244:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::665040277244:role/ecsOctopusTaskRole",
+  "family": "octopus-task",
   "networkMode": "awsvpc",
-  "requiresCompatibilities": ["FARGATE"],
-  "cpu": "1024",
-  "memory": "3072",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "executionRoleArn": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::123456789012:role/ecsTaskRole",
+  "cpu": "512",
+  "memory": "1024",
   "containerDefinitions": [
     {
-      "name": "octopus-deploy",
-      "image": "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest",
+      "name": "octopus-container",
+      "image": "REPLACE_ME", 
       "essential": true,
       "portMappings": [
         {
@@ -21,7 +23,7 @@
       "environment": [
         {
           "name": "OCTOPUS_SQL_CONNECTION_STRING",
-          "value": "Server=${RDS_ENDPOINT};Database=OctopusDeploy;User Id=${RDS_USERNAME};Password=${RDS_PASSWORD};"
+          "value": "Server=octopus-db.crufshaeq0ox.us-east-1.rds.amazonaws.com;Database=OctopusDeploy;User Id=octopusadmin;Password=SecureDBPass123!;"
         },
         {
           "name": "OCTOPUS_ADMIN_USERNAME",
@@ -29,29 +31,13 @@
         },
         {
           "name": "OCTOPUS_ADMIN_PASSWORD",
-          "value": "${OCTOPUS_ADMIN_PASSWORD}"
+          "value": "SecurePassword123!"
         },
         {
           "name": "OCTOPUS_PORT",
           "value": "8080"
         }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/octopus-deploy",
-          "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "octopus"
-        }
-      },
-      "healthCheck": {
-        "command": ["CMD-SHELL", "powershell -command \"Invoke-WebRequest -Uri http://localhost:8080 -UseBasicParsing | Where-Object { $_.StatusCode -eq 200 }\""],
-        "interval": 30,
-        "timeout": 5,
-        "retries": 3,
-        "startPeriod": 120
-      },
-      "operatingSystemFamily": "WINDOWS_SERVER_2022_FULL"
+      ]
     }
   ]
 }
