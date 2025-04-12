@@ -10,56 +10,56 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Check out the repository
+      # 1) Check out your repository code
       - name: Check out repository
         uses: actions/checkout@v3
 
-      # 2) Configure AWS credentials (from GitHub Secrets)
+      # 2) Configure AWS credentials using your GitHub Secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.ACCESSKEYID }}
+          aws-secret-access-key: ${{ secrets.SECRETACCESSKEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       # 3) Log into Amazon ECR
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
 
-      # 4) Build and push the Docker image
+      # 4) Build and push Docker image to ECR
       - name: Build and push Docker image to ECR
         run: |
+          # Use commit SHA as an image tag
           IMAGE_TAG=${{ github.sha }}
-          ECR_URI="665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy"
+
+          # Construct the ECR URI from your secrets
+          ECR_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}"
 
           # Build the image from your Dockerfile
           docker build -t octopus-deploy .
 
           # Tag it for ECR
-          docker tag octopus-deploy:latest "${ECR_URI}:${IMAGE_TAG}"
+          docker tag octopus-deploy:latest "$ECR_URI:$IMAGE_TAG"
 
           # Push the image to ECR
-          docker push "${ECR_URI}:${IMAGE_TAG}"
+          docker push "$ECR_URI:$IMAGE_TAG"
 
-      # 5) Render (update) the ECS task definition with the new image
+      # 5) Render (update) the ECS task definition
+      #    - Overwrites the container image field
+      #    - Injects secrets for DB connection & admin password as ENV variables
       - name: Render ECS task definition
         id: render
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          # Path to your base task definition JSON
+          # Base ECS task definition JSON
           task-definition: ecs-task-definition.json
-          # The container name in that JSON you want to update
-          container-name: octopus-container
-          # The new image URI we just pushed
-          image: 665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:${{ github.sha }}
 
-      # 6) Deploy the new task definition to ECS
-      - name: Deploy to Amazon ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          # The rendered (updated) task definition output from the step above
-          task-definition: ${{ steps.render.outputs.task-definition }}
-          # Your existing ECS service/cluster
-          service: octopus-service
-          cluster: octopus-cluster
-          wait-for-service-stability: true
+          # The container name to update in "containerDefinitions"
+          container-name: octopus-container
+
+          # Use the newly pushed image
+          image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
+
+          # Override environment variables with your RDS/Octopus secrets
+          environment-variables: >
+            OCTOPUS_SQL_CONNECTION_STRING=_
