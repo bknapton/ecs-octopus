@@ -54,8 +54,8 @@ jobs:
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy@v1
         with:
-          cluster: ${{ env.CLUSTER_NAME }}
-          service: ${{ env.SERVICE_NAME }}
+          cluster: octopus-cluster
+          service: octopus-service
           # This is your ECS task definition JSON file with placeholders
           task-definition: ./ecs-task-definition.json
           container-name: octopus-container
