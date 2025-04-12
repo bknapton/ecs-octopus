@@ -1,36 +1,65 @@
-name: Deploy to ECS
+name: Deploy Octopus to ECS
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  deploy-ecs:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check out repo
+      # 1) Check out the repository
+      - name: Check out repository
         uses: actions/checkout@v3
 
+      # 2) Configure AWS credentials (from GitHub Secrets)
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.ACCESSKEYID }}
-          aws-secret-access-key: ${{ secrets.SECRETACCESSKEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Render task definition
+      # 3) Log into Amazon ECR
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # 4) Build and push the Docker image
+      - name: Build and push Docker image to ECR
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          ECR_URI="665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy"
+
+          # Build the image from your Dockerfile
+          docker build -t octopus-deploy .
+
+          # Tag it for ECR
+          docker tag octopus-deploy:latest "${ECR_URI}:${IMAGE_TAG}"
+
+          # Push the image to ECR
+          docker push "${ECR_URI}:${IMAGE_TAG}"
+
+      # 5) Render (update) the ECS task definition with the new image
+      - name: Render ECS task definition
         id: render
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
+          # Path to your base task definition JSON
           task-definition: ecs-task-definition.json
+          # The container name in that JSON you want to update
           container-name: octopus-container
-          # Use the new image you just built/pushed:
-          image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:${{ github.sha }}
+          # The new image URI we just pushed
+          image: 665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:${{ github.sha }}
 
-      - name: Deploy to ECS
+      # 6) Deploy the new task definition to ECS
+      - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
+          # The rendered (updated) task definition output from the step above
           task-definition: ${{ steps.render.outputs.task-definition }}
+          # Your existing ECS service/cluster
           service: octopus-service
           cluster: octopus-cluster
           wait-for-service-stability: true
