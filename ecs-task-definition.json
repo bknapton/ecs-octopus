@@ -1,8 +1,6 @@
 {
   "family": "octopus-task",
-  "requiresCompatibilities": [
-    "FARGATE"
-  ],
+  "requiresCompatibilities": ["FARGATE"],
   "networkMode": "awsvpc",
   "executionRoleArn": "arn:aws:iam::665040277244:role/ecsTaskExecutionRole",
   "taskRoleArn": "arn:aws:iam::665040277244:role/ecsOctopusTaskRole",
@@ -11,7 +9,7 @@
   "containerDefinitions": [
     {
       "name": "octopus-container",
-      "image": "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:062ab81e94981961a3dec29b2164db1ca90216f3",
+      "image": "REPLACE_ME",
       "essential": true,
       "portMappings": [
         {
@@ -22,16 +20,8 @@
       ],
       "environment": [
         {
-          "name": "OCTOPUS_SQL_CONNECTION_STRING",
-          "value": "Server=octopus-db.crufshaeq0ox.us-east-1.rds.amazonaws.com;Database=OctopusDeploy;User Id=octopusadmin;Password=SecureDBPass123!;"
-        },
-        {
           "name": "OCTOPUS_ADMIN_USERNAME",
           "value": "admin"
-        },
-        {
-          "name": "OCTOPUS_ADMIN_PASSWORD",
-          "value": "SecurePassword123!"
         },
         {
           "name": "OCTOPUS_PORT",
