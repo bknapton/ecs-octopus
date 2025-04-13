@@ -12,6 +12,14 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
+      # Configure AWS credentials with the region explicitly specified
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACCESSKEYID }}
+          aws-secret-access-key: ${{ secrets.SECRETACCESSKEY }}
+          aws-region: us-east-1    # <- Replace with your desired region
+
       - name: Log in to Amazon ECR
         id: ecr_login
         uses: aws-actions/amazon-ecr-login@v1
@@ -19,11 +27,11 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t octopus-deploy .
-          docker tag octopus-deploy:latest ${{ steps.ecr_login.outputs.registry }}/octopus-deploy:latest
+          docker tag octopus-deploy:latest 665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest
 
-      - name: Push to ECR
+      - name: Push Docker image to ECR
         run: |
-          docker push ${{ steps.ecr_login.outputs.registry }}/octopus-deploy:latest
+          docker push 665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest
 
       - name: Register ECS task definition and deploy service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
