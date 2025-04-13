@@ -31,7 +31,6 @@
           "name": "OCTOPUS_PORT",
           "value": "8080"
         }
-        // Add any other required environment variables here
       ]
     }
   ]
