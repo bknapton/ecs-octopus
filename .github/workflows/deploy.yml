@@ -39,7 +39,7 @@ jobs:
           docker build -t octopus-deploy .
 
           # Tag it for ECR
-          docker tag octopus-deploy:latest "$ECR_URI:$IMAGE_TAG"
+          docker tag octopus-deploy:latest "$ECR_URI:latest"
 
           # Push the image to ECR
           docker push "$ECR_URI:$IMAGE_TAG"
