@@ -48,7 +48,7 @@
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/octopus-deploy",
-          "awslogs-region": "us-east-1",     // Match your AWS region
+          "awslogs-region": "us-east-1",
           "awslogs-stream-prefix": "octopus-deploy"
         }
       }
