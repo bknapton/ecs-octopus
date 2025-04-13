@@ -5,9 +5,34 @@
     "FARGATE"
   ],
   "cpu": "1024",
-  "memory": "2048",       
+  "memory": "2048",
   "executionRoleArn": "arn:aws:iam::665040277244:role/ecsTaskExecutionRole",
   "containerDefinitions": [
+    {
+      "name": "sqlserver",
+      "image": "mcr.microsoft.com/mssql/server:2019-latest",
+      "essential": true,
+      "environment": [
+        {
+          "name": "ACCEPT_EULA",
+          "value": "Y"
+        },
+        {
+          "name": "SA_PASSWORD",
+          "value": "P@ssw0rd123!"
+        },
+        {
+          "name": "MSSQL_PID",
+          "value": "Express"
+        }
+      ],
+      "portMappings": [
+        {
+          "containerPort": 1433,
+          "protocol": "tcp"
+        }
+      ]
+    },
     {
       "name": "octopus-deploy",
       "image": "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest",
@@ -19,7 +44,7 @@
         },
         {
           "name": "DB_CONNECTION_STRING",
-          "value": "Server=db,1433;Initial Catalog=OctopusDeploy;Persist Security Info=False;User ID=sa;Password=P@ssw0rd123!;MultipleActiveResultSets=False;Connection Timeout=30;"
+          "value": "Server=sqlserver,1433;Initial Catalog=OctopusDeploy;Persist Security Info=False;User ID=sa;Password=P@ssw0rd123!;MultipleActiveResultSets=False;Connection Timeout=30;"
         },
         {
           "name": "ADMIN_USERNAME",
