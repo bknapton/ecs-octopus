@@ -30,7 +30,7 @@ jobs:
       - name: Build and push Docker image to ECR
         run: |
           # Use commit SHA as an image tag
-          IMAGE_TAG=${{ github.sha }}
+          IMAGE_TAG=latest
 
           # Construct the ECR URI from your secrets
           ECR_URI="665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy"
