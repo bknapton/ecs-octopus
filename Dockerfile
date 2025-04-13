@@ -1,11 +1,9 @@
-# Use the official Octopus Deploy image
+# Use the official Octopus Deploy Docker image
 FROM octopusdeploy/octopusdeploy:latest
 
-# If you need custom config or scripts, copy them here:
-# COPY custom-script.ps1 /scripts/
+# Accept the EULA
+ENV ACCEPT_OCTOPUS_EULA="Y"
 
-# Expose port 8080 for clarity (optional)
+# Expose default ports for Octopus (change if you configure differently)
 EXPOSE 8080
-
-# The official image sets up Octopus Deploy on port 80/443 by default
-# but we override it via environment variables in the ECS task definition (OCTOPUS_PORT=8080).
+EXPOSE 10943
