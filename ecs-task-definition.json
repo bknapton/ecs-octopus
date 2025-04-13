@@ -1,37 +1,41 @@
 {
-  "family": "octopus-task",
-  "requiresCompatibilities": ["FARGATE"],
+  "family": "octopus-deploy",
   "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
   "executionRoleArn": "arn:aws:iam::665040277244:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::665040277244:role/ecsOctopusTaskRole",
-  "cpu": "512",
-  "memory": "1024",
+  "cpu": "256",
+  "memory": "512",
   "containerDefinitions": [
     {
-      "name": "octopus-container",
-      "image": "REPLACE_ME",
+      "name": "octopus-deploy",
+      "image": "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest",
       "essential": true,
+      "environment": [
+        {
+          "name": "ACCEPT_OCTOPUS_EULA",
+          "value": "Y"
+        }
+      ],
       "portMappings": [
         {
           "containerPort": 8080,
-          "hostPort": 8080,
-          "protocol": "tcp"
+          "hostPort": 8080
+        },
+        {
+          "containerPort": 10943,
+          "hostPort": 10943
         }
       ],
-      "environment": [
-        {
-          "name": "ACCEPT_EULA",
-          "value": "Y"
-        },
-        {
-          "name": "OCTOPUS_ADMIN_USERNAME",
-          "value": "admin"
-        },
-        {
-          "name": "OCTOPUS_PORT",
-          "value": "8080"
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/octopus-deploy",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
         }
-      ]
+      }
     }
   ]
 }
