@@ -39,10 +39,10 @@ jobs:
           docker build -t octopus-deploy .
 
           # Tag it for ECR
-          docker tag octopus-deploy:latest "$ECR_URI:latest"
+          docker tag octopus-deploy:latest "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest"
 
           # Push the image to ECR
-          docker push "$ECR_URI:$IMAGE_TAG"
+          docker push "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest"
 
       # 5) Render (update) the ECS task definition
       #    - Overwrites the container image field
@@ -58,7 +58,7 @@ jobs:
           container-name: octopus-container
 
           # Use the newly pushed image
-          image: 665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:${{ github.sha }}
+          image: 665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest
 
           # Override environment variables with your RDS/Octopus secrets
           environment-variables: >
