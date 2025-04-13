@@ -13,24 +13,12 @@
       "image": "mcr.microsoft.com/mssql/server:2019-latest",
       "essential": true,
       "environment": [
-        {
-          "name": "ACCEPT_EULA",
-          "value": "Y"
-        },
-        {
-          "name": "SA_PASSWORD",
-          "value": "P@ssw0rd123!"
-        },
-        {
-          "name": "MSSQL_PID",
-          "value": "Express"
-        }
+        { "name": "ACCEPT_EULA", "value": "Y" },
+        { "name": "SA_PASSWORD", "value": "P@ssw0rd123!" },
+        { "name": "MSSQL_PID", "value": "Express" }
       ],
       "portMappings": [
-        {
-          "containerPort": 1433,
-          "protocol": "tcp"
-        }
+        { "containerPort": 1433, "protocol": "tcp" }
       ]
     },
     {
@@ -38,36 +26,18 @@
       "image": "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest",
       "essential": true,
       "environment": [
-        {
-          "name": "ACCEPT_EULA",
-          "value": "Y"
-        },
+        { "name": "ACCEPT_EULA", "value": "Y" },
         {
           "name": "DB_CONNECTION_STRING",
-          "value": "Server=sqlserver,1433;Initial Catalog=OctopusDeploy;Persist Security Info=False;User ID=sa;Password=P@ssw0rd123!;MultipleActiveResultSets=False;Connection Timeout=30;"
+          "value": "Server=localhost,1433;Initial Catalog=OctopusDeploy;Persist Security Info=False;User ID=sa;Password=P@ssw0rd123!;MultipleActiveResultSets=False;Connection Timeout=30;"
         },
-        {
-          "name": "ADMIN_USERNAME",
-          "value": "admin"
-        },
-        {
-          "name": "ADMIN_PASSWORD",
-          "value": "Password123!"
-        },
-        {
-          "name": "ADMIN_EMAIL",
-          "value": "admin@example.com"
-        }
+        { "name": "ADMIN_USERNAME", "value": "admin" },
+        { "name": "ADMIN_PASSWORD", "value": "Password123!" },
+        { "name": "ADMIN_EMAIL", "value": "admin@example.com" }
       ],
       "portMappings": [
-        {
-          "containerPort": 8080,
-          "protocol": "tcp"
-        },
-        {
-          "containerPort": 10943,
-          "protocol": "tcp"
-        }
+        { "containerPort": 8080, "protocol": "tcp" },
+        { "containerPort": 10943, "protocol": "tcp" }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
