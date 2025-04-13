@@ -20,6 +20,10 @@
       ],
       "environment": [
         {
+          "name": "ACCEPT_EULA",
+          "value": "Y"
+        },
+        {
           "name": "OCTOPUS_ADMIN_USERNAME",
           "value": "admin"
         },
@@ -27,6 +31,7 @@
           "name": "OCTOPUS_PORT",
           "value": "8080"
         }
+        // Add any other required environment variables here
       ]
     }
   ]
