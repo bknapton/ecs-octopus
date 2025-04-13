@@ -2,7 +2,7 @@
 FROM octopusdeploy/octopusdeploy:latest
 
 # Accept the EULA
-ENV ACCEPT_OCTOPUS_EULA="Y"
+ENV ACCEPT_EULA="Y"
 
 # Expose default ports for Octopus (change if you configure differently)
 EXPOSE 8080
