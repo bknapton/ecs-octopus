@@ -29,37 +29,41 @@ jobs:
       # 4) Build and push Docker image to ECR
       - name: Build and push Docker image to ECR
         run: |
-          # Use commit SHA as an image tag
+          # Use commit SHA as an image tag or "latest"
           IMAGE_TAG=latest
-
-          # Construct the ECR URI from your secrets
           ECR_URI="665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy"
 
-          # Build the image from your Dockerfile
           docker build -t octopus-deploy .
-
-          # Tag it for ECR
-          docker tag octopus-deploy:latest "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest"
-
-          # Push the image to ECR
-          docker push "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest"
+          docker tag octopus-deploy:latest "${ECR_URI}:${IMAGE_TAG}"
+          docker push "${ECR_URI}:${IMAGE_TAG}"
 
       # 5) Render (update) the ECS task definition
-      #    - Overwrites the container image field
-      #    - Injects secrets for DB connection & admin password as ENV variables
       - name: Render ECS task definition
         id: render
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          # Base ECS task definition JSON
+          # Path to your ECS task definition JSON
           task-definition: ecs-task-definition.json
 
-          # The container name to update in "containerDefinitions"
+          # The container name in that JSON
           container-name: octopus-container
 
-          # Use the newly pushed image
+          # The newly pushed Docker image
           image: 665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest
 
-          # Override environment variables with your RDS/Octopus secrets
+          # Here's where we set ACCEPT_EULA=Y, along with any other variables you need
           environment-variables: >
-            OCTOPUS_SQL_CONNECTION_STRING=_
+            ACCEPT_EULA=Y
+            OCTOPUS_SQL_CONNECTION_STRING=octopus-db.crufshaeq0ox.us-east-1.rds.amazonaws.com
+            # You can add more key=value lines here, if needed.
+            # e.g. OCTOPUS_ADMIN_USERNAME=admin
+            #      OCTOPUS_ADMIN_PASSWORD=SomeSecret
+
+      # 6) Deploy the rendered (updated) task definition to ECS
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render.outputs.task-definition }}
+          cluster: octopus-cluster
+          service: octopus-service
+          wait-for-service-stability: true
