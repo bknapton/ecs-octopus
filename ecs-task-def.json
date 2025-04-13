@@ -1,41 +1,41 @@
-{
-  "family": "octopus-deploy",
-  "networkMode": "awsvpc",
-  "requiresCompatibilities": [
-    "FARGATE"
-  ],
-  "executionRoleArn": "arn:aws:iam::665040277244:role/ecsTaskExecutionRole",
-  "cpu": "256",
-  "memory": "512",
-  "containerDefinitions": [
-    {
-      "name": "octopus-deploy",
-      "image": "665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest",
-      "essential": true,
-      "environment": [
-        {
-          "name": "ACCEPT_OCTOPUS_EULA",
-          "value": "Y"
-        }
-      ],
-      "portMappings": [
-        {
-          "containerPort": 8080,
-          "hostPort": 8080
-        },
-        {
-          "containerPort": 10943,
-          "hostPort": 10943
-        }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/octopus-deploy",
-          "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "ecs"
-        }
-      }
-    }
-  ]
-}
+name: Deploy Octopus Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACCESSKEYID }}
+          aws-secret-access-key: ${{ secrets.SECRETACCESSKEY }}
+          aws-region: us-east-1  # update as needed
+
+      - name: Log in to Amazon ECR
+        id: ecr_login
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build Docker image
+        run: |
+          docker build -t octopus-deploy .
+          docker tag octopus-deploy:latest 665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest
+
+      - name: Push to ECR
+        run: |
+          docker push 665040277244.dkr.ecr.us-east-1.amazonaws.com/octopus-deploy:latest
+
+      - name: Register ECS task definition & deploy service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ecs-task-def.json
+          service: octopus-deploy
+          cluster: octopus-deploy
+          wait-for-service-stability: true
