@@ -1,0 +1,34 @@
+name: Deploy Octopus Deploy to ECS
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Log in to Amazon ECR
+        id: ecr_login
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build Docker image
+        run: |
+          docker build -t octopus-deploy .
+          docker tag octopus-deploy:latest ${{ steps.ecr_login.outputs.registry }}/octopus-deploy:latest
+
+      - name: Push to ECR
+        run: |
+          docker push ${{ steps.ecr_login.outputs.registry }}/octopus-deploy:latest
+
+      - name: Register ECS task definition and deploy service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ecs-task-def.json
+          service: octopus-deploy
+          cluster: octopus-deploy
+          wait-for-service-stability: true
